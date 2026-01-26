@@ -2,7 +2,17 @@
   <Folder Name="/docs/" />
   <Folder Name="/src/" />
   <Folder Name="/src/BuildingBlocks/" />
+  <Folder Name="/src/BuildingBlocks/Core/" />
+  <Folder Name="/src/BuildingBlocks/Logging/" />
+  <Folder Name="/src/BuildingBlocks/Messaging/" />
+  <Folder Name="/src/BuildingBlocks/Observability/" />
+  <Folder Name="/src/BuildingBlocks/Web/" />
   <Folder Name="/src/Frontend/" />
   <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/AuthService/" />
+  <Folder Name="/src/Services/DashboardApi/" />
+  <Folder Name="/src/Services/OrdersService/" />
+  <Folder Name="/src/Services/PaymentsService/" />
+  <Folder Name="/src/Services/TelemetryCollector/" />
   <Folder Name="/tests/" />
 </Solution>
