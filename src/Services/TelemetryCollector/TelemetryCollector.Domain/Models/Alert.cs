@@ -4,11 +4,11 @@ namespace TelemetryCollector.Domain.Models
 {
     public class Alert
     {
-        public string ServiceName { get; set; }
-        public string EndPoint { get; set; }
-        public AlertType Type { get; set; } 
-        public string Description { get; set; } 
-        public DateTime TriggeredAt { get; set; } 
+        public string ServiceName { get;  }
+        public string EndPoint { get;  }
+        public AlertType Type { get;  } 
+        public string Description { get; } 
+        public DateTime TriggeredAt { get;  } 
 
         private Alert(string serviceName, string endPoint, AlertType type, string description)
         {
