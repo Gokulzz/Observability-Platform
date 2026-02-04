@@ -14,6 +14,7 @@
   <Folder Name="/src/Services/OrdersService/" />
   <Folder Name="/src/Services/PaymentsService/" />
   <Folder Name="/src/Services/TelemetryCollector/">
+    <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Application/TelemetryCollector.Application.csproj" Id="b7313109-a26f-4924-8395-42a3cc9df7b9" />
     <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Domain/TelemetryCollector.Domain.csproj" Id="04998fe8-14d7-43c0-9fb6-fd48d4f90511" />
   </Folder>
   <Folder Name="/tests/" />

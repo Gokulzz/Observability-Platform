@@ -19,6 +19,7 @@
        }
 
        public int TotalRequests => _events.Count;    
+
        public int SuccessfulRequests => _events.Count(e => e.isSuccessful()); 
        public int ClientErrorRequests => _events.Count(e => e.isClientError());
        public int ServerErrorRequests => _events.Count(e => e.isServerError());  

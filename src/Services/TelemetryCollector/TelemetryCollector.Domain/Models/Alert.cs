@@ -33,7 +33,7 @@ namespace TelemetryCollector.Domain.Models
             return new Alert(serviceName,
                              endPoint,
                              AlertType.HighErrorRate,
-                             $"Error rate {errorRate}% excedded threshold");
+                             $"Error rate {errorRate}% exceeded threshold");
 
         }
 
