@@ -1,0 +1,6 @@
+@TelemetryCollector.Api_HostAddress = http://localhost:5098
+
+GET {{TelemetryCollector.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

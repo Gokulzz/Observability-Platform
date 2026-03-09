@@ -1,6 +1,4 @@
-﻿
-
-using TelemetryCollector.Domain.Models.Enums;
+﻿using TelemetryCollector.Domain.Models.Enums;
 
 namespace TelemetryCollector.Domain.Models
 {
@@ -8,7 +6,7 @@ namespace TelemetryCollector.Domain.Models
     {
         public string ServiceName { get; }
         public string EndPoint { get; }
-        public double MaxErrorRate { get;  }  
+        public double MaxErrorRate { get;  }   
         public double MaxP95LatencyMs { get; }
 
         public int MaxConsecutiveHealthFailures { get; } 

@@ -1,12 +1,9 @@
 <Solution>
   <Folder Name="/docs/" />
   <Folder Name="/src/" />
-  <Folder Name="/src/BuildingBlocks/" />
-  <Folder Name="/src/BuildingBlocks/Core/" />
-  <Folder Name="/src/BuildingBlocks/Logging/" />
-  <Folder Name="/src/BuildingBlocks/Messaging/" />
-  <Folder Name="/src/BuildingBlocks/Observability/" />
-  <Folder Name="/src/BuildingBlocks/Web/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/BuildingBlocks.Observability/BuildingBlocks.Observability.csproj" Id="7e7de7fc-7673-4b8a-bca5-918780bcece6" />
+  </Folder>
   <Folder Name="/src/Frontend/" />
   <Folder Name="/src/Services/" />
   <Folder Name="/src/Services/AuthService/" />
@@ -14,8 +11,10 @@
   <Folder Name="/src/Services/OrdersService/" />
   <Folder Name="/src/Services/PaymentsService/" />
   <Folder Name="/src/Services/TelemetryCollector/">
+    <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Api/TelemetryCollector.Api.csproj" Id="a18b84c3-f6ae-4a91-8819-c53e04130ae5" />
     <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Application/TelemetryCollector.Application.csproj" Id="b7313109-a26f-4924-8395-42a3cc9df7b9" />
     <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Domain/TelemetryCollector.Domain.csproj" Id="04998fe8-14d7-43c0-9fb6-fd48d4f90511" />
+    <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Infrastructure/TelemetryCollector.Infrastructure.csproj" Id="39253237-8315-4259-b5c6-ca2b5e2b89ef" />
   </Folder>
   <Folder Name="/tests/" />
 </Solution>

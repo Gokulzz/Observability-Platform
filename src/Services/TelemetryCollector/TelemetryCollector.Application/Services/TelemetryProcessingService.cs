@@ -3,7 +3,6 @@ using TelemetryCollector.Application.Notifications;
 using TelemetryCollector.Application.Repositories;
 using TelemetryCollector.Application.Time;
 using TelemetryCollector.Domain.Models;
-using TelemetryCollector.Domain.Models.Enums;
 
 namespace TelemetryCollector.Application.Services
 {
@@ -13,26 +12,29 @@ namespace TelemetryCollector.Application.Services
         private readonly ISlaPolicyRepository slaPolicyRepository;
         private readonly IAlertRepository alertRepository;
         private readonly IAlertPublisher alertPublisher; 
-        private readonly IHealthStatusProvider healthStatusProvider;
+        private readonly IHealthStateStore healthStatusProvider;
+        private readonly ITimeProvider timeProvider;    
         public TelemetryProcessingService(
             IEndpointMetricRepository endpointMetricRepository,
             ISlaPolicyRepository slaPolicyRepository,
             IAlertRepository alertRepository,
             IAlertPublisher alertPublisher, 
-            IHealthStatusProvider healthStatusProvider)
+            IHealthStateStore healthStatusProvider,
+            ITimeProvider timeProvider)
         {
             this.endpointMetricRepository = endpointMetricRepository;
             this.slaPolicyRepository = slaPolicyRepository;
             this.alertRepository = alertRepository;
             this.alertPublisher = alertPublisher;
             this.healthStatusProvider = healthStatusProvider;
+            this.timeProvider = timeProvider;
         }
         public async Task ProcessTelemetryAsync(TelemetryEvent telemetryEvent)
         {
             // Determine the time window for the telemetry event
             var windowStart = TimeWindowCalculator.FloorToMinute(telemetryEvent.Timestamp);
             // Retrieve or create the endpoint metric for the time window
-            var metric = await endpointMetricRepository.GetEndpointMetricAsync(
+            var metric = await endpointMetricRepository.GetAsync(
                 telemetryEvent.ServiceName,
                 telemetryEvent.EndPoint,
                 windowStart);
@@ -46,42 +48,21 @@ namespace TelemetryCollector.Application.Services
             }
 
             metric.AddEvent(telemetryEvent);
-            await endpointMetricRepository.SaveEndpointMetricAsync(metric);
-            var healthStatus = await healthStatusProvider.GetHealthStatusAsync(telemetryEvent.ServiceName, telemetryEvent.EndPoint);
-            // Retrieve SLA policies for the service
-            var slaPolicies = await slaPolicyRepository .GetSlaPolicyByServiceName(telemetryEvent.ServiceName);
+            await endpointMetricRepository.SaveAsync(metric);
+            var healthStatus = await healthStatusProvider.GetHealthStatusAsync(telemetryEvent.ServiceName);
+            // Retrieve SLA policy for the specific service name and endpoint
+            var slaPolicy = await slaPolicyRepository.GetSlaPolicy(telemetryEvent.ServiceName, telemetryEvent.EndPoint);
             // Evaluate policies and generate alerts if violations are found
-            foreach (var policy in slaPolicies)
+            if (slaPolicy is null)
+                return;
+            var violations = slaPolicy.EvaluateSla(metric, healthStatus);
+            foreach (var violation in violations)
             {
-                var violations = policy.EvaluateSla(metric, healthStatus);
-
-                foreach (var violation in violations)
-                {
-                    Alert alert = violation.Type switch
-                    {
-                        AlertType.HighLatency =>
-                            Alert.HighLatency(
-                                violation.ServiceName,
-                                violation.EndPoint,
-                                violation.ActualValue),
-
-                        AlertType.HighErrorRate =>
-                            Alert.HighErrorRate(
-                                violation.ServiceName,
-                                violation.EndPoint,
-                                violation.ActualValue),
-
-                        AlertType.ServiceDown =>
-                            Alert.ServiceDown(
-                                violation.ServiceName,
-                                violation.EndPoint),
-
-                        _ => throw new InvalidOperationException("Unknown alert type")
-                    };
-                    await alertRepository.SaveAlertAsync(alert);
-                    await alertPublisher.PublishAlertAsync(alert);
-                }
+                var alert= violation.ToAlert(timeProvider.UtcNow);
+                await alertRepository.SaveAlertAsync(alert);
+                await alertPublisher.PublishAlertAsync(alert);
             }
+            
         }
 
     }

@@ -6,7 +6,7 @@
          string EndPoint,   
          string Method,
          int StatusCode,
-         int ResponseTimeMs,
+         long ResponseTimeMs,
          DateTime Timestamp,
          string CorrelationId
     )

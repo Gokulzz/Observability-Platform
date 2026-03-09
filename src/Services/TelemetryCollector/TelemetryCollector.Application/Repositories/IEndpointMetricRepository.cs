@@ -4,8 +4,8 @@ namespace TelemetryCollector.Application.Repositories
 {
     public interface IEndpointMetricRepository
     {
-        public Task<EndpointMetric?> GetEndpointMetricAsync(string serviceName, string endpoint, DateTime windowStart);
-        public Task SaveEndpointMetricAsync(EndpointMetric endpointMetric); 
+        public Task<EndpointMetric?> GetAsync(string serviceName, string endpoint, DateTime windowStart);
+        public Task SaveAsync(EndpointMetric endpointMetric); 
 
     }
 }
