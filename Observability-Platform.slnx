@@ -6,10 +6,19 @@
   </Folder>
   <Folder Name="/src/Frontend/" />
   <Folder Name="/src/Services/" />
-  <Folder Name="/src/Services/AuthService/" />
   <Folder Name="/src/Services/DashboardApi/" />
-  <Folder Name="/src/Services/OrdersService/" />
-  <Folder Name="/src/Services/PaymentsService/" />
+  <Folder Name="/src/Services/OrdersService/">
+    <Project Path="src/Services/OrdersService/Orders.Api/Orders.Api.csproj" Id="0d2e2f72-1969-49d8-ac0e-1c92609910f4" />
+    <Project Path="src/Services/OrdersService/Orders.Application/Orders.Application.csproj" Id="850b4a57-aff3-4d15-87d3-0e56e15c3e81" />
+    <Project Path="src/Services/OrdersService/Orders.Domain/Orders.Domain.csproj" Id="e6473c6b-5ce7-4bda-9143-0220c09bbdf6" />
+    <Project Path="src/Services/OrdersService/Orders.Infrastructure/Orders.Infrastructure.csproj" Id="b658211c-5d03-46a1-84bb-d88d26e7fd47" />
+  </Folder>
+  <Folder Name="/src/Services/PaymentsService/">
+    <Project Path="src/Services/PaymentsService/Payments.API/Payments.API.csproj" Id="0d98cfe6-e869-45aa-863e-2b17c09ebaf0" />
+    <Project Path="src/Services/PaymentsService/Payments.Application/Payments.Application.csproj" Id="2cc9720c-d39c-41f0-a46d-dd169cc4d011" />
+    <Project Path="src/Services/PaymentsService/Payments.Domain/Payments.Domain.csproj" Id="e3a9cb7f-91a2-4963-a46b-637c980ed811" />
+    <Project Path="src/Services/PaymentsService/Payments.Infrastructure/Payments.Infrastructure.csproj" Id="5aecfd43-f9cd-4102-8632-6f36f73f30c9" />
+  </Folder>
   <Folder Name="/src/Services/TelemetryCollector/">
     <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Api/TelemetryCollector.Api.csproj" Id="a18b84c3-f6ae-4a91-8819-c53e04130ae5" />
     <Project Path="src/Services/TelemetryCollector/TelemetryCollector.Application/TelemetryCollector.Application.csproj" Id="b7313109-a26f-4924-8395-42a3cc9df7b9" />

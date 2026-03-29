@@ -14,13 +14,14 @@ namespace BuildingBlocks.Observability.ExceptionHandler
         }
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            _logger.LogError(exception, "An unhandled exception occurred while processing the request.");
+            var path= httpContext.Request.Path;
+            _logger.LogError(exception, "An unhandled exception occurred while processing the request. Path: {path}", path);
             var problemDetails = new ProblemDetails()
             {
                 Title = "An unexpected error occurred.",
                 Status = StatusCodes.Status500InternalServerError,
                 Detail = exception.Message,
-                Instance = httpContext.Request.Path 
+                Instance = path
             };
             httpContext.Response.StatusCode = problemDetails.Status.Value;
             httpContext.Response.ContentType = "application/json";

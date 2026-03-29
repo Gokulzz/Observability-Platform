@@ -1,6 +1,4 @@
-﻿
-
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -10,7 +8,7 @@ namespace BuildingBlocks.Observability.Logging
     {
        public static IHostBuilder AddLogging(this IHostBuilder hostBuilder)
         {
-            return hostBuilder.UseSerilog((context, services, logger) =>
+            return hostBuilder.UseSerilog((context, logger) =>
             {
                 logger.ReadFrom.Configuration(context.Configuration)
                       .Enrich.FromLogContext();

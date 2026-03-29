@@ -49,12 +49,13 @@ namespace TelemetryCollector.Infrastructure.Workers
             }
             catch (Exception ex)
             {
-                {
+               
                     logger.LogError(ex, "Health check failed for {ServiceName} at {HealthEndpoint}", serviceOptions.ServiceName, serviceOptions.HealthEndpoint);
                     isHealthy = false;
-                }
-                await healthStatusService.UpdateHealthStatusAsync(serviceOptions.ServiceName, isHealthy);
+                
+              
             }
+            await healthStatusService.UpdateHealthStatusAsync(serviceOptions.ServiceName, isHealthy);
         }
     }
 }

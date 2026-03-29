@@ -1,21 +1,25 @@
+using BuildingBlocks.Observability.ApiClient;
 using BuildingBlocks.Observability.Correlation;
 using BuildingBlocks.Observability.ExceptionHandler;
 using BuildingBlocks.Observability.Logging;
-using TelemetryCollector.Api.Configurations;
-using TelemetryCollector.Api.Endpoints;
+using Payments.API.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.AddLogging();  
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Host.AddLogging();
 builder.Services.AddOpenApi();
-builder.Services.AddInfrastructureServices(builder.Configuration);  
-builder.Services.AddApplicationServices();
 builder.Services.AddSwaggerGen();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-
+builder.Services.AddProblemDetails();
+builder.Services.AddHttpClient("TelemetryClient", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["BaseUrl:Url"]!);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+builder.Services.AddHealthChecks();
+builder.Services.AddSingleton<TelemetryClient>();
 
 var app = builder.Build();
 
@@ -28,9 +32,10 @@ if (app.Environment.IsDevelopment())
 app.UseCorrelationId();
 app.UseExceptionHandler();
 app.UseObservabilityRequestLogging();
+app.UseRouting();   
 app.UseHttpsRedirection();
-app.UseRouting();
-app.MapTelemetryEndpoints();
-app.MapSlaPolicyEndpoints();    
+app.MapPaymentEndpoints();
+app.MapHealthChecks("/health");
 app.Run();
+
 
