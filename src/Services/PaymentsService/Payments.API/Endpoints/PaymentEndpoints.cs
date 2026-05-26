@@ -22,6 +22,7 @@ namespace Payments.API.Endpoints
                      sw.ElapsedMilliseconds,
                      DateTime.UtcNow
                ));
+                return Results.StatusCode(statusCode);
             })
                 .WithName("ProcessPayment")
                 .WithTags("Payments");

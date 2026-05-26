@@ -14,11 +14,7 @@
 
         // Running latency stats
         private long _totalLatencyMs;
-
-        // For now we keep a bounded latency sample for percentile estimation
-        // (Later replace with histogram / TDigest if needed)
-        private readonly List<long> _latencySamples = new();
-        private const int MaxSamples = 1024; // prevent unbounded growth
+        private double _p95LatencyMs;   
 
         public EndpointMetric(string serviceName, string endPoint, DateTime timeWindowStart)
         {
@@ -27,32 +23,7 @@
             TimeWindowStart = timeWindowStart;
         }
 
-        // Domain Behavior — called for every telemetry event
-        public void AddEvent(TelemetryEvent telemetryEvent)
-        {
-            _totalRequests++;
-
-            if (telemetryEvent.isSuccessful())
-                _successfulRequests++;
-            else if (telemetryEvent.isClientError())
-                _clientErrorRequests++;
-            else if (telemetryEvent.isServerError())
-                _serverErrorRequests++;
-
-            _totalLatencyMs += telemetryEvent.ResponseTimeMs;
-
-            // Maintain bounded sample for percentile calculation
-            if (_latencySamples.Count < MaxSamples)
-            {
-                _latencySamples.Add(telemetryEvent.ResponseTimeMs);
-            }
-            else
-            {
-                // simple reservoir-style replacement
-                var index = Random.Shared.Next(MaxSamples);
-                _latencySamples[index] = telemetryEvent.ResponseTimeMs;
-            }
-        }
+       
 
         // Read Models (derived state)
         public int TotalRequests => _totalRequests;
@@ -68,18 +39,7 @@
             _totalRequests == 0 ? 0 :
             (double)_totalLatencyMs / _totalRequests;
 
-        public double P95LatencyMs
-        {
-            get
-            {
-                if (_latencySamples.Count == 0)
-                    return 0;
-
-                var sorted = _latencySamples.OrderBy(x => x).ToList();
-                int index = (int)Math.Ceiling(sorted.Count * 0.95) - 1;
-                return sorted[index];
-            }
-        }
+        public double P95LatencyMs => _p95LatencyMs;
 
         // Used by repository when loading from DB
         internal static EndpointMetric LoadEndpointMetric
@@ -92,7 +52,7 @@
         int clientErrorRequests,
         int serverErrorRequests,
         long totalLatencyMs,
-        IEnumerable<long>? latencySamples = null
+        double p95LatencyMs
         )
         {
             var metric = new EndpointMetric(serviceName, endPoint, timeWindowStart);
@@ -102,9 +62,8 @@
             metric._clientErrorRequests = clientErrorRequests;
             metric._serverErrorRequests = serverErrorRequests;
             metric._totalLatencyMs = totalLatencyMs;
+            metric._p95LatencyMs = p95LatencyMs;    
 
-            if (latencySamples != null)
-                metric._latencySamples.AddRange(latencySamples);
 
             return metric;
         }

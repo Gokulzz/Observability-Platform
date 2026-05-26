@@ -2,6 +2,7 @@ using BuildingBlocks.Observability.ApiClient;
 using BuildingBlocks.Observability.Correlation;
 using BuildingBlocks.Observability.ExceptionHandler;
 using BuildingBlocks.Observability.Logging;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Orders.Api.Endpoints;
 
 
@@ -21,6 +22,7 @@ builder.Services.AddHttpClient("TelemetryClient", client =>
 });
 builder.Services.AddSingleton<TelemetryClient>();
 builder.Services.AddHealthChecks();
+builder.Services.AddCors();
 
 
 var app = builder.Build();
@@ -31,13 +33,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors(policy =>
+{
+    policy.AllowAnyOrigin()
+          .AllowAnyMethod()
+          .AllowAnyHeader();    
+});
 app.UseCorrelationId();
 app.UseExceptionHandler();
 app.UseObservabilityRequestLogging();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.MapOrderEndpoints(); 
-
-
+app.MapHealthChecks("/health");
 app.Run();
 

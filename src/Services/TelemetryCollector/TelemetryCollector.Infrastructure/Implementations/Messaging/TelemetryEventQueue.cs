@@ -25,7 +25,12 @@ namespace TelemetryCollector.Infrastructure.Implementations.Messaging
 
         public async Task EnqueueEventAsync(TelemetryEvent telemetryEvent)
         {
-           await _channel.Writer.WriteAsync(telemetryEvent);    
+           await _channel.Writer.WriteAsync(telemetryEvent);
+        }
+
+        public bool TryEnqueueEvent(TelemetryEvent telemetryEvent)
+        {
+            return _channel.Writer.TryWrite(telemetryEvent);
         }
     }
 }

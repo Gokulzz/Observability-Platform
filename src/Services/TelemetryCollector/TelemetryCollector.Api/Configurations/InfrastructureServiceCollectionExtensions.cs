@@ -30,6 +30,8 @@ namespace TelemetryCollector.Api.Configurations
             services.AddScoped<IAlertRepository, AlertRepository>();
 
             services.AddSingleton<IAlertPublisher, AlertPublisher>();
+            services.Configure<AlertNotificationOptions>(configuration.GetSection("Alerting"));
+            services.AddSingleton<IAlertCooldownStore, AlertCooldownStore>();
             services.AddSingleton<ITimeProvider, TimeProvider>();
             services.AddSingleton<IHealthStateStore, HealthStateStore>();
 

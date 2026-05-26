@@ -23,6 +23,7 @@ namespace Orders.Api.Endpoints
                      DateTime.UtcNow
 
                ));
+                return Results.StatusCode(statusCode);
 
             })
                 .WithName("CreateOrder")

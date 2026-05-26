@@ -20,6 +20,7 @@ builder.Services.AddHttpClient("TelemetryClient", client =>
 });
 builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<TelemetryClient>();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -29,6 +30,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors(policy =>
+{
+    policy.AllowAnyOrigin()
+          .AllowAnyMethod()
+          .AllowAnyHeader();
+});
 app.UseCorrelationId();
 app.UseExceptionHandler();
 app.UseObservabilityRequestLogging();

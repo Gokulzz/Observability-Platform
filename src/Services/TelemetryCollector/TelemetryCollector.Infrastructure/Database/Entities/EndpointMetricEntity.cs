@@ -12,6 +12,7 @@
         public int ServerErrorRequests { get; set; }
 
         public long TotalLatencyMs { get; set; }
+
     }
 
 }

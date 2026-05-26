@@ -1,71 +1,56 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.Data;
+using TelemetryCollector.Application;
 using TelemetryCollector.Application.Repositories;
+using TelemetryCollector.Application.Time;
 using TelemetryCollector.Domain.Models;
-using TelemetryCollector.Infrastructure.Database.Entities;
+using TelemetryCollector.Infrastructure.DTO;
 
 namespace TelemetryCollector.Infrastructure.Database.Repostories
 {
     public class EndpointMetricRepository : IEndpointMetricRepository
     {
-        private readonly TelemetryDbContext _dbContext; 
-        public EndpointMetricRepository(TelemetryDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-        public async Task<EndpointMetric?> GetAsync(string serviceName, string endpoint, DateTime windowStart)
-        {
-            var result = await _dbContext.EndpointMetrics
-                .AsNoTracking()
-                .Where(em => em.ServiceName == serviceName &&
-                             em.EndPoint == endpoint &&
-                             em.WindowStart == windowStart)
-                .FirstOrDefaultAsync();
+        private readonly string _connectionString;
 
-            if (result == null)
-                return null;
-
-            return EndpointMetric.LoadEndpointMetric(
-                result.ServiceName,
-                result.EndPoint,
-                result.WindowStart,
-                result.TotalRequests,
-                result.SuccessfulRequests,
-                result.ClientErrorRequests,
-                result.ServerErrorRequests,
-                result.TotalLatencyMs
-            );
+        public EndpointMetricRepository(IConfiguration configuration)
+        {
+            _connectionString = configuration.GetConnectionString("TelemetryDb")!;
         }
 
-
-        public async Task SaveAsync(EndpointMetric metric)
+        public async Task<EndpointMetric> UpsertAsync(TelemetryEvent telemetryEvent)
         {
-            var entity = await _dbContext.EndpointMetrics
-                .FirstOrDefaultAsync(x =>
-                    x.ServiceName == metric.ServiceName &&
-                    x.EndPoint == metric.EndPoint &&
-                    x.WindowStart == metric.TimeWindowStart);
+            using var connection = new SqlConnection(_connectionString);
+            var windowStart = TimeWindowCalculator.FloorToMinute(telemetryEvent.Timestamp);
+            var bucketUpperBoundMs =
+       LatencyBucketCalculator.GetBucketUpperBound(telemetryEvent.ResponseTimeMs);
 
-            if (entity is null)
-            {
-                entity = new EndpointMetricEntity
+            var entity= await connection.QuerySingleAsync<EndpointMetricDTO>(
+                "UpsertEndpointsMetric",
+                new
                 {
-                    ServiceName = metric.ServiceName,
-                    EndPoint = metric.EndPoint,
-                    WindowStart = metric.TimeWindowStart
-                };
-
-                _dbContext.EndpointMetrics.Add(entity);
-            }
-
-            // Persist raw accumulator state
-            entity.TotalRequests = metric.TotalRequests;
-            entity.SuccessfulRequests = metric.SuccessfulRequests;
-            entity.ClientErrorRequests = metric.ClientErrorRequests;
-            entity.ServerErrorRequests = metric.ServerErrorRequests;
-            entity.TotalLatencyMs = metric.GetTotalLatencyMs();
-
-            await _dbContext.SaveChangesAsync();
+                    ServiceName = telemetryEvent.ServiceName,
+                    EndPoint =telemetryEvent.EndPoint,
+                    WindowStart = windowStart,
+                    ResponseTimeMs = telemetryEvent.ResponseTimeMs,
+                    StatusCode=telemetryEvent.StatusCode,
+                    BucketUpperBoundMs = bucketUpperBoundMs
+                },
+                commandType: CommandType.StoredProcedure
+            );
+            return EndpointMetric.LoadEndpointMetric(
+                           entity.ServiceName,
+                           entity.EndPoint,
+                           entity.WindowStart,
+                           entity.TotalRequests,
+                           entity.SuccessfulRequests,
+                           entity.ClientErrorRequests,
+                           entity.ServerErrorRequests,
+                           entity.TotalLatencyMs,
+                           entity.P95LatencyMs
+   );
         }
-
     }
 }

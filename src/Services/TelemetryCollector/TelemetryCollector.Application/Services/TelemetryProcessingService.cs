@@ -12,6 +12,7 @@ namespace TelemetryCollector.Application.Services
         private readonly ISlaPolicyRepository slaPolicyRepository;
         private readonly IAlertRepository alertRepository;
         private readonly IAlertPublisher alertPublisher; 
+        private readonly IAlertCooldownStore alertCooldownStore;
         private readonly IHealthStateStore healthStatusProvider;
         private readonly ITimeProvider timeProvider;    
         public TelemetryProcessingService(
@@ -19,6 +20,7 @@ namespace TelemetryCollector.Application.Services
             ISlaPolicyRepository slaPolicyRepository,
             IAlertRepository alertRepository,
             IAlertPublisher alertPublisher, 
+            IAlertCooldownStore alertCooldownStore,
             IHealthStateStore healthStatusProvider,
             ITimeProvider timeProvider)
         {
@@ -26,29 +28,14 @@ namespace TelemetryCollector.Application.Services
             this.slaPolicyRepository = slaPolicyRepository;
             this.alertRepository = alertRepository;
             this.alertPublisher = alertPublisher;
+            this.alertCooldownStore = alertCooldownStore;
             this.healthStatusProvider = healthStatusProvider;
             this.timeProvider = timeProvider;
         }
         public async Task ProcessTelemetryAsync(TelemetryEvent telemetryEvent)
         {
-            // Determine the time window for the telemetry event
-            var windowStart = TimeWindowCalculator.FloorToMinute(telemetryEvent.Timestamp);
-            // Retrieve or create the endpoint metric for the time window
-            var metric = await endpointMetricRepository.GetAsync(
-                telemetryEvent.ServiceName,
-                telemetryEvent.EndPoint,
-                windowStart);
-
-            if (metric == null)
-            {
-                metric = new EndpointMetric(
-                    telemetryEvent.ServiceName,
-                    telemetryEvent.EndPoint,
-                    windowStart);
-            }
-
-            metric.AddEvent(telemetryEvent);
-            await endpointMetricRepository.SaveAsync(metric);
+           
+            var metric = await endpointMetricRepository.UpsertAsync(telemetryEvent);
             var healthStatus = await healthStatusProvider.GetHealthStatusAsync(telemetryEvent.ServiceName);
             // Retrieve SLA policy for the specific service name and endpoint
             var slaPolicy = await slaPolicyRepository.GetSlaPolicy(telemetryEvent.ServiceName, telemetryEvent.EndPoint);
@@ -58,8 +45,20 @@ namespace TelemetryCollector.Application.Services
             var violations = slaPolicy.EvaluateSla(metric, healthStatus);
             foreach (var violation in violations)
             {
-                var alert= violation.ToAlert(timeProvider.UtcNow);
-                await alertRepository.SaveAlertAsync(alert);
+                var alert = violation.ToAlert(timeProvider.UtcNow);
+                if (!alertCooldownStore.TryAcquire(alert))
+                    continue;
+
+                try
+                {
+                    await alertRepository.SaveAlertAsync(alert);
+                }
+                catch
+                {
+                    alertCooldownStore.Release(alert);
+                    throw;
+                }
+
                 await alertPublisher.PublishAlertAsync(alert);
             }
             

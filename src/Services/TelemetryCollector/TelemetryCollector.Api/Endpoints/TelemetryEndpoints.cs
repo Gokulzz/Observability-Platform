@@ -8,7 +8,7 @@ namespace TelemetryCollector.Api.Endpoints
     {
         public static IEndpointRouteBuilder MapTelemetryEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapPost("/api/telemetry", async (TelemetryRequest request, ITelemetryEventQueue telemetryEventQueue) =>
+            endpoints.MapPost("/api/telemetry", (TelemetryRequest request, ITelemetryEventQueue telemetryEventQueue) =>
             {
                 var telemetryEvent = new TelemetryEvent(
                     request.ServiceName,
@@ -18,8 +18,9 @@ namespace TelemetryCollector.Api.Endpoints
                     request.ResponseTimeMs,
                     request.Timestamp,
                     request.CorrelationId);
-                await telemetryEventQueue.EnqueueEventAsync(telemetryEvent);
-                return Results.Accepted();
+                return telemetryEventQueue.TryEnqueueEvent(telemetryEvent)
+                    ? Results.Accepted()
+                    : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
 
             })
                 .WithName("IngestTelemetry")

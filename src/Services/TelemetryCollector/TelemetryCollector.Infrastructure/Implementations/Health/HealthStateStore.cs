@@ -7,7 +7,6 @@ namespace TelemetryCollector.Infrastructure.Implementations.Health
 {
     public class HealthStateStore : IHealthStateStore
     {
-        //for now we are using in-memory store, we will replace this with redis in future to make it distributed and persistent
         private readonly ConcurrentDictionary<string, HealthStatus> _healthStore = new();
         private static string Key(string serviceName) => serviceName;
 
