@@ -6,7 +6,6 @@
   </Folder>
   <Folder Name="/src/Frontend/" />
   <Folder Name="/src/Services/" />
-  <Folder Name="/src/Services/DashboardApi/" />
   <Folder Name="/src/Services/OrdersService/">
     <Project Path="src/Services/OrdersService/Orders.Api/Orders.Api.csproj" Id="0d2e2f72-1969-49d8-ac0e-1c92609910f4" />
     <Project Path="src/Services/OrdersService/Orders.Application/Orders.Application.csproj" Id="850b4a57-aff3-4d15-87d3-0e56e15c3e81" />

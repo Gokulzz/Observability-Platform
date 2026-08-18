@@ -1,0 +1,47 @@
+name: observability-platform
+
+services:
+  orders-api:
+    image: observability-platform/orders-api:dev
+    build:
+      context: .
+      dockerfile: src/Services/OrdersService/Orders.Api/Dockerfile
+    depends_on:
+      - telemetry-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      BaseUrl__Url: http://telemetry-api:8080
+    ports:
+      - "7000:8080"
+
+  payments-api:
+    image: observability-platform/payments-api:dev
+    build:
+      context: .
+      dockerfile: src/Services/PaymentsService/Payments.API/Dockerfile
+    depends_on:
+      - telemetry-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      BaseUrl__Url: http://telemetry-api:8080
+    ports:
+      - "7001:8080"
+
+  telemetry-api:
+    image: observability-platform/telemetry-api:dev
+    build:
+      context: .
+      dockerfile: src/Services/TelemetryCollector/TelemetryCollector.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__TelemetryDb: "Server=host.docker.internal,1433;Database=TelemetryCollectorDb;User Id=sa;Password=Gokul123;TrustServerCertificate=True;"
+
+      ServiceHealthMonitoring__Services__0__BaseUrl: "http://orders-api:8080"
+      ServiceHealthMonitoring__Services__1__BaseUrl: "http://payments-api:8080"
+
+    ports:
+      - "7130:8080"

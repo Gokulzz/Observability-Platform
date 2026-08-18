@@ -2,7 +2,6 @@ using BuildingBlocks.Observability.ApiClient;
 using BuildingBlocks.Observability.Correlation;
 using BuildingBlocks.Observability.ExceptionHandler;
 using BuildingBlocks.Observability.Logging;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Orders.Api.Endpoints;
 
 
@@ -18,8 +17,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHttpClient("TelemetryClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["BaseUrl:Url"]!);
-    client.Timeout = TimeSpan.FromSeconds(5);
-});
+}).AddStandardResilienceHandler();
 builder.Services.AddSingleton<TelemetryClient>();
 builder.Services.AddHealthChecks();
 builder.Services.AddCors();

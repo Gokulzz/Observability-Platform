@@ -13,6 +13,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/Services/TelemetryCollector/TelemetryCollector.Api/TelemetryCollector.Api.csproj", "src/Services/TelemetryCollector/TelemetryCollector.Api/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Observability/BuildingBlocks.Observability.csproj", "src/BuildingBlocks/BuildingBlocks.Observability/"]
+COPY ["src/Services/TelemetryCollector/TelemetryCollector.Domain/TelemetryCollector.Domain.csproj", "src/Services/TelemetryCollector/TelemetryCollector.Domain/"]
+COPY ["src/Services/TelemetryCollector/TelemetryCollector.Application/TelemetryCollector.Application.csproj", "src/Services/TelemetryCollector/TelemetryCollector.Application/"]
+COPY ["src/Services/TelemetryCollector/TelemetryCollector.Infrastructure/TelemetryCollector.Infrastructure.csproj", "src/Services/TelemetryCollector/TelemetryCollector.Infrastructure/"]
 RUN dotnet restore "./src/Services/TelemetryCollector/TelemetryCollector.Api/TelemetryCollector.Api.csproj"
 COPY . .
 WORKDIR "/src/src/Services/TelemetryCollector/TelemetryCollector.Api"

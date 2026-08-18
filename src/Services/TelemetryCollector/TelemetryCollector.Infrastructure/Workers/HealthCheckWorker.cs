@@ -27,6 +27,8 @@ namespace TelemetryCollector.Infrastructure.Workers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            // add delay before starting the health checks to allow other services to start up  
+            await Task.Delay(TimeSpan.FromSeconds(20));
             while (!stoppingToken.IsCancellationRequested)
             {
                 foreach (var service in serviceHealthMonitoringOptions.Services)

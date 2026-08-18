@@ -12,20 +12,21 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/Services/PaymentsService/Payments.API/Payments.API.csproj", "src/Services/PaymentsService/Payments.API/"]
+COPY ["src/Services/OrdersService/Orders.Api/Orders.Api.csproj", "src/Services/OrdersService/Orders.Api/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Observability/BuildingBlocks.Observability.csproj", "src/BuildingBlocks/BuildingBlocks.Observability/"]
-RUN dotnet restore "./src/Services/PaymentsService/Payments.API/Payments.API.csproj"
+COPY ["src/Services/OrdersService/Orders.Infrastructure/Orders.Infrastructure.csproj", "src/Services/OrdersService/Orders.Infrastructure/"]
+RUN dotnet restore "./src/Services/OrdersService/Orders.Api/Orders.Api.csproj"
 COPY . .
-WORKDIR "/src/src/Services/PaymentsService/Payments.API"
-RUN dotnet build "./Payments.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/src/Services/OrdersService/Orders.Api"
+RUN dotnet build "./Orders.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Payments.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Orders.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Payments.API.dll"]
+ENTRYPOINT ["dotnet", "Orders.Api.dll"]
